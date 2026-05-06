@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JobSphere — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --card: #131929;
+      --accent: #f5a623;
+      --accent2: #e05c2a;
+      --text: #e8e6e1;
+      --muted: #7a8099;
+      --border: #1e2640;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      overflow: hidden;
+    }
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(135deg, #0f1f3d 0%, #1a0f2e 50%, #0b1a2e 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(245,166,35,0.15) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      border-radius: 50%;
+    }
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(224,92,42,0.1) 0%, transparent 70%);
+      bottom: 50px; right: -50px;
+      border-radius: 50%;
+    }
+    .brand { position: relative; z-index: 1; }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    .brand-tagline {
+      margin-top: 16px;
+      font-size: 1.1rem;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 360px;
+    }
+    .stats {
+      margin-top: 60px;
+      display: flex;
+      gap: 40px;
+      position: relative; z-index: 1;
+    }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--accent);
+    }
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .right-panel {
+      width: 480px;
+      background: var(--card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      border-left: 1px solid var(--border);
+    }
+    .auth-box { width: 100%; }
+    .tabs {
+      display: flex;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 32px;
+    }
+    .tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+    .tab.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #000;
+      font-weight: 500;
+    }
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+    .form-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      margin-bottom: 6px;
+    }
+    .form-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+    .role-switch {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .role-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .role-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,0.08); }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--accent); }
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .msg { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; display: none; }
+    .msg.error { background: rgba(220,50,50,0.1); color: #ff6b6b; border: 1px solid rgba(220,50,50,0.3); display: block; }
+    .msg.success { background: rgba(50,200,100,0.1); color: #4dde80; border: 1px solid rgba(50,200,100,0.3); display: block; }
+  </style>
+</head>
+<body>
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-name">Job Portal</div>
+      <div class="brand-tagline">Your gateway to opportunities. Connect with top employers and land your dream career.</div>
+    </div>
+    <div class="stats">
+      <div><div class="stat-num">12K+</div><div class="stat-label">Active Jobs</div></div>
+      <div><div class="stat-num">4K+</div><div class="stat-label">Companies</div></div>
+      <div><div class="stat-num">98%</div><div class="stat-label">Success Rate</div></div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="auth-box">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Sign In</button>
+        <button class="tab" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div class="form-section active" id="login-section">
+        <div class="form-title">Welcome back</div>
+        <div class="form-sub">Sign in to your account to continue</div>
+        <div class="role-switch">
+          <button class="role-btn active" id="role-user" onclick="setRole('user')">👤 Job Seeker</button>
+          <button class="role-btn" id="role-admin" onclick="setRole('admin')">🛡️ Admin</button>
+        </div>
+        <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@email.com"/></div>
+        <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"/></div>
+        <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+        <div class="msg" id="login-msg"></div>
+      </div>
+
+      <!-- REGISTER -->
+      <div class="form-section" id="register-section">
+        <div class="form-title">Create account</div>
+        <div class="form-sub">Join thousands of job seekers today</div>
+        <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="John Doe"/></div>
+        <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@email.com"/></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="reg-phone" placeholder="+91 9876543210"/></div>
+        <div class="form-group"><label>Address</label><input type="text" id="reg-address" placeholder="City, State"/></div>
+        <div class="form-group"><label>Password</label><input type="password" id="reg-pass" placeholder="Min 6 characters"/></div>
+        <button class="btn-primary" onclick="doRegister()">Create Account →</button>
+        <div class="msg" id="reg-msg"></div>
+      </div>
+    </div>
+  </div>
+<!-- ADMIN REGISTER SECTION -->
+<div class="form-section" id="admin-register-section">
+  <div class="form-title">Register as Admin</div>
+  <div class="form-sub">Create new administrator account</div>
+  
+  <div class="form-group">
+    <label>Full Name</label>
+    <input type="text" id="admin-reg-name" placeholder="Admin Name"/>
+  </div>
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" id="admin-reg-email" placeholder="admin@company.com"/>
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="admin-reg-pass" placeholder="Min 6 characters"/>
+  </div>
+
+  <button class="btn-primary" onclick="doAdminRegister()">Register as Admin →</button>
+  <div class="msg" id="admin-reg-msg"></div>
+
+  <p style="text-align:center; margin-top:20px; font-size:0.85rem; color:var(--muted);">
+    Already have an admin account? 
+    <a href="#" onclick="switchToLogin()" style="color:var(--accent);">Login here</a>
+  </p>
+</div>
+ <script>
+    let currentRole = 'user';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => 
+        t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1))
+      );
+      document.getElementById('login-section').classList.toggle('active', tab === 'login');
+      document.getElementById('register-section').classList.toggle('active', tab === 'register');
+    }
+
+    function setRole(role) {
+      currentRole = role;
+      document.getElementById('role-user').classList.toggle('active', role === 'user');
+      document.getElementById('role-admin').classList.toggle('active', role === 'admin');
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-pass').value.trim();
+      const msg = document.getElementById('login-msg');
+
+      if (!email || !password) {
+        msg.className = 'msg error';
+        msg.textContent = 'Please enter email and password';
+        return;
+      }
+
+      const endpoint = currentRole === 'admin' ? '/auth/admin-login' : '/auth/login';
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          msg.className = 'msg success';
+          msg.textContent = `Welcome, ${data.name || 'User'}! Redirecting...`;
+
+          setTimeout(() => {
+            window.location.href = data.role === 'admin' 
+              ? 'admin-dashboard.html' 
+              : 'user-dashboard.html';
+          }, 800);
+        } else {
+          msg.className = 'msg error';
+          msg.textContent = data.message || 'Login failed';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        msg.className = 'msg error';
+        msg.textContent = 'Server connection error. Please try again.';
+      }
+    }
+
+    async function doRegister() {
+      // ... your register function is fine, but improved error handling
+      const body = {
+        name: document.getElementById('reg-name').value.trim(),
+        email: document.getElementById('reg-email').value.trim(),
+        phone: document.getElementById('reg-phone').value.trim(),
+        address: document.getElementById('reg-address').value.trim(),
+        password: document.getElementById('reg-pass').value.trim()
+      };
+
+      if (!body.name || !body.email || !body.password) {
+        const msg = document.getElementById('reg-msg');
+        msg.className = 'msg error';
+        msg.textContent = 'Name, email and password are required';
+        return;
+      }
+
+      try {
+        const res = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+        const msg = document.getElementById('reg-msg');
+        msg.className = data.success ? 'msg success' : 'msg error';
+        msg.textContent = data.message;
+
+        if (data.success) {
+          setTimeout(() => switchTab('login'), 1500);
+        }
+      } catch (err) {
+        console.error('Register error:', err);
+        const msg = document.getElementById('reg-msg');
+        msg.className = 'msg error';
+        msg.textContent = 'Server error. Please try again.';
+      }
+    }
+    
+
+    // Single clean session check on page load
+    async function checkSession() {
+      try {
+        const res = await fetch('/auth/session', { 
+          credentials: 'include' 
+        });
+        const data = await res.json();
+
+        if (data.loggedIn) {
+          window.location.href = data.role === 'admin' 
+            ? 'admin-dashboard.html' 
+            : 'user-dashboard.html';
+        }
+      } catch (err) {
+        console.error('Session check failed:', err);
+      }
+    }
+
+    // Run session check when page loads
+    window.onload = checkSession;
+</script>
+</body>
+</html>

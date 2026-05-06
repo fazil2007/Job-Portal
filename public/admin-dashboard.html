@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JobSphere — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--bg:#08090f;--card:#0e1120;--accent:#7c5cfc;--accent2:#a78bfa;--text:#e2e0ff;--muted:#5a607a;--border:#1a1f35;--green:#4dde80;--red:#ff6b6b;--amber:#f5a623;--blue:#60a5fa;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh;}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+    .logo{padding:24px 24px 20px;border-bottom:1px solid var(--border);}
+    .logo-text{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--accent2);}
+    .logo-sub{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+    .nav{padding:12px 0;flex:1;overflow-y:auto;}
+    .nav-section{padding:8px 20px 4px;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;color:var(--muted);font-size:0.88rem;transition:all 0.2s;border-left:3px solid transparent;}
+    .nav-item:hover,.nav-item.active{color:var(--accent2);background:rgba(124,92,252,0.07);border-left-color:var(--accent);}
+    .sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);}
+    .admin-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:0.85rem;flex-shrink:0;}
+    .user-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .logout-btn{width:100%;padding:8px;background:rgba(220,50,50,0.08);border:1px solid rgba(220,50,50,0.25);color:var(--red);border-radius:8px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;}
+    .main{margin-left:250px;padding:32px;min-height:100vh;}
+    .page-header{margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+    .page-title{font-family:'Playfair Display',serif;font-size:2rem;}
+    .page-sub{color:var(--muted);font-size:0.88rem;margin-top:4px;}
+    .panel{display:none;animation:fadeIn 0.2s ease;}
+    .panel.active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px;}
+    .card-title{font-size:0.88rem;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:0.8px;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-group{margin-bottom:14px;}
+    .form-group label{display:block;font-size:0.76rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
+    .form-group input,.form-group textarea{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s;}
+    .form-group input:focus{border-color:var(--accent);}
+    .form-group textarea{resize:vertical;min-height:80px;line-height:1.5;}
+    .btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn:hover{transform:translateY(-1px);opacity:0.9;}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+    .btn-outline{background:transparent;border:1px solid var(--accent);color:var(--accent2);}
+    .btn-danger{background:rgba(220,50,50,0.1);border:1px solid rgba(220,50,50,0.3);color:var(--red);}
+    .btn-green{background:rgba(77,222,128,0.1);border:1px solid rgba(77,222,128,0.3);color:var(--green);}
+    .btn-sm{padding:6px 12px;font-size:0.78rem;}
+    .msg-bar{padding:10px 14px;border-radius:8px;margin-top:10px;font-size:0.84rem;display:none;}
+    .msg-bar.ok {background:rgba(77,222,128,0.1);color:var(--green);border:1px solid rgba(77,222,128,0.3);display:block;}
+    .msg-bar.err{background:rgba(255,107,107,0.1);color:var(--red);border:1px solid rgba(255,107,107,0.3);display:block;}
+    table{width:100%;border-collapse:collapse;}
+    th{text-align:left;padding:10px 14px;font-size:0.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);}
+    td{padding:12px 14px;font-size:0.86rem;border-bottom:1px solid rgba(26,31,53,0.6);vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    .badge{padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:500;}
+    .badge-Pending{background:rgba(245,166,35,0.15);color:var(--amber);}
+    .badge-Approved{background:rgba(77,222,128,0.15);color:var(--green);}
+    .badge-Rejected{background:rgba(255,107,107,0.15);color:var(--red);}
+    .badge-PDF{background:rgba(255,107,107,0.15);color:#ff8080;}
+    .badge-DOC,.badge-DOCX{background:rgba(96,165,250,0.15);color:var(--blue);}
+    .star-rating{color:var(--amber);letter-spacing:2px;}
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;}
+    .modal.open{display:flex;}
+    .modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:520px;width:92%;max-height:85vh;overflow-y:auto;}
+    .modal-title{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:18px;}
+    .modal-close{float:right;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
+    select{padding:7px 10px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.84rem;outline:none;cursor:pointer;}
+    .cv-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+    .cv-info{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
+    .cv-icon{font-size:1.4rem;flex-shrink:0;}
+    .cv-name{font-size:0.86rem;font-weight:500;word-break:break-all;}
+    .cv-meta{font-size:0.75rem;color:var(--muted);margin-top:3px;}
+    .contact-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;}
+    .contact-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+    .contact-user{font-size:0.84rem;font-weight:600;color:var(--accent2);}
+    .contact-email{font-size:0.76rem;color:var(--muted);}
+    .contact-msg{font-size:0.88rem;line-height:1.6;color:var(--text);padding:10px 14px;background:var(--card);border-radius:8px;margin:8px 0;border-left:3px solid var(--accent);}
+    .contact-date{font-size:0.75rem;color:var(--muted);margin-bottom:10px;}
+    .reply-wrap{margin-top:10px;}
+    .reply-wrap label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:5px;}
+    .reply-row{display:flex;gap:8px;}
+    .reply-input{flex:1;padding:9px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.2s;}
+    .reply-input:focus{border-color:var(--accent);}
+    .reply-sent{font-size:0.78rem;color:var(--green);margin-top:6px;padding:6px 10px;background:rgba(77,222,128,0.08);border-radius:6px;display:none;}
+    .feedback-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;}
+    .feedback-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+    .feedback-user{font-size:0.84rem;font-weight:600;color:var(--accent2);}
+    .feedback-comment{font-size:0.87rem;line-height:1.6;color:var(--text);font-style:italic;}
+    .feedback-date{font-size:0.75rem;color:var(--muted);margin-top:6px;}
+    .skill-chip{display:inline-block;padding:2px 8px;background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.2);border-radius:20px;font-size:0.72rem;color:var(--accent2);margin:2px;}
+    .empty-state{text-align:center;padding:32px;color:var(--muted);}
+    .empty-state .empty-icon{font-size:2.4rem;margin-bottom:10px;}
+    .refresh-badge{font-size:0.72rem;color:var(--muted);padding:3px 8px;background:rgba(255,255,255,0.05);border-radius:20px;}
+    .live-dot{display:inline-block;width:6px;height:6px;background:var(--green);border-radius:50%;margin-right:4px;animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-text">Job Portal</div>
+    <div class="logo-sub">Admin Panel</div>
+  </div>
+  <div class="nav">
+    <div class="nav-section">Management</div>
+    <div class="nav-item active" onclick="showPanel('jobs',this)"><span>💼</span> Manage Jobs</div>
+    <div class="nav-item" onclick="showPanel('users',this)"><span>👥</span> View Users</div>
+    <div class="nav-item" onclick="showPanel('applications',this)"><span>📋</span> Applications</div>
+    <div class="nav-section">Documents & Messages</div>
+    <div class="nav-item" onclick="showPanel('cvs',this)"><span>📄</span> User CVs</div>
+    <div class="nav-item" onclick="showPanel('contacts',this)"><span>✉️</span> Contact Messages</div>
+    
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-meta">
+      <div class="admin-avatar" id="admin-avatar">A</div>
+      <div>
+        <div style="font-size:0.88rem;font-weight:500" id="admin-name">Admin</div>
+        <div style="font-size:0.72rem;color:var(--muted)">Administrator</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">⬡ Sign Out</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- JOBS -->
+  <div class="panel active" id="panel-jobs">
+    <div class="page-header">
+      <div><div class="page-title">Manage Jobs</div><div class="page-sub">Add, edit or remove listings</div></div>
+      <button class="btn btn-primary" onclick="openAddJob()">+ Add New Job</button>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Title</th><th>Location</th><th>Salary</th><th>Skills</th><th>Actions</th></tr></thead>
+        <tbody id="jobs-tbody"><tr><td colspan="5" style="color:var(--muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="panel" id="panel-users">
+    <div class="page-header">
+      <div><div class="page-title">View Users</div><div class="page-sub">All registered job seekers</div></div>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Experience</th><th>Education</th><th>Skills</th><th>CVs</th></tr></thead>
+        <tbody id="users-tbody"><tr><td colspan="7" style="color:var(--muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- APPLICATIONS -->
+  <div class="panel" id="panel-applications">
+    <div class="page-header">
+      <div><div class="page-title">Applications</div><div class="page-sub">Review and update statuses</div></div>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Applicant</th><th>Email</th><th>Job</th><th>Date</th><th>Status</th><th>Update</th></tr></thead>
+        <tbody id="appl-tbody"><tr><td colspan="6" style="color:var(--muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CVs -->
+  <div class="panel" id="panel-cvs">
+    <div class="page-header">
+      <div>
+        <div class="page-title">User CVs</div>
+        <div class="page-sub"><span class="live-dot"></span>Auto-refreshes every 15s</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadAllCVs()">↺ Refresh Now</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">All Uploaded Resumes</div>
+        <span class="refresh-badge" id="cvs-refresh-time">Not loaded yet</span>
+      </div>
+      <div id="cvs-list"><div class="empty-state"><div class="empty-icon">📂</div>Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- CONTACTS -->
+  <div class="panel" id="panel-contacts">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Contact Messages</div>
+        <div class="page-sub"><span class="live-dot"></span>Auto-refreshes every 15s</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadContacts()">↺ Refresh Now</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Messages from Users</div>
+        <span class="refresh-badge" id="contacts-refresh-time">Not loaded yet</span>
+      </div>
+      <div id="contacts-list"><div class="empty-state"><div class="empty-icon">✉️</div>Loading…</div></div>
+    </div>
+  </div>
+
+ 
+
+</div>
+
+<!-- JOB MODAL -->
+<div class="modal" id="job-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="job-modal-title">Add Job</div>
+    <input type="hidden" id="edit-job-id"/>
+    <div class="form-group"><label>Job Title</label><input id="job-title" type="text" placeholder="e.g. Senior Developer"/></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Location</label><input id="job-location" type="text" placeholder="Chennai, India"/></div>
+      <div class="form-group"><label>Salary Range</label><input id="job-salary" type="text" placeholder="₹8-12 LPA"/></div>
+    </div>
+    <div class="form-group"><label>Skills (comma separated)</label><input id="job-skills" type="text" placeholder="Python, SQL, Django"/></div>
+    <button class="btn btn-primary" onclick="saveJob()" style="width:100%;padding:12px;justify-content:center;margin-top:4px;">Save Job</button>
+    <div class="msg-bar" id="job-msg"></div>
+  </div>
+</div>
+
+<!-- USER CVs MODAL -->
+<div class="modal" id="cv-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('cv-modal').classList.remove('open')">✕</button>
+    <div class="modal-title" id="cv-modal-title">CVs</div>
+    <div id="cv-modal-body"></div>
+  </div>
+</div>
+
+<script>
+/* ── helpers ── */
+const api = (url, opts = {}) => fetch(url, {
+  credentials: 'include',
+  headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  ...opts
+});
+
+function timeNow() {
+  return new Date().toLocaleTimeString();
+}
+
+function stars(n) {
+  const r = Math.round(n);
+  return '★'.repeat(r) + '☆'.repeat(5 - r);
+}
+
+/* ── AUTH ── */
+fetch('/auth/session', { credentials: 'include' }).then(r => r.json()).then(d => {
+  if (!d.loggedIn || d.role !== 'admin') { window.location.href = 'index.html'; return; }
+  document.getElementById('admin-name').textContent = d.user.name;
+  document.getElementById('admin-avatar').textContent = d.user.name.charAt(0).toUpperCase();
+});
+
+/* ── NAV ── */
+let autoRefreshTimer = null;
+
+function showPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  el.classList.add('active');
+
+  // Clear any previous auto-refresh
+  if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+
+  if (name === 'jobs')         loadJobs();
+  if (name === 'users')        loadUsers();
+  if (name === 'applications') loadApplications();
+
+  // These panels auto-refresh every 15 seconds
+  if (name === 'cvs') {
+    loadAllCVs();
+    autoRefreshTimer = setInterval(loadAllCVs, 15000);
+  }
+  if (name === 'contacts') {
+    loadContacts();
+    autoRefreshTimer = setInterval(loadContacts, 15000);
+  }
+  if (name === 'feedback') {
+    loadFeedback();
+    autoRefreshTimer = setInterval(loadFeedback, 15000);
+  }
+}
+
+/* ══════════════════════════════
+   JOBS
+══════════════════════════════ */
+async function loadJobs() {
+  const data  = await api('/jobs').then(r => r.json());
+  const tbody = document.getElementById('jobs-tbody');
+  if (!data.jobs || !data.jobs.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px">No jobs yet.</td></tr>'; return;
+  }
+  tbody.innerHTML = data.jobs.map(j => `
+    <tr>
+      <td><strong>${j.title}</strong></td>
+      <td>${j.location}</td>
+      <td>${j.salary_range}</td>
+      <td style="max-width:160px;font-size:0.78rem;color:var(--muted)">${(j.skills||'').substring(0,50)}${(j.skills||'').length>50?'…':''}</td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick='openEditJob(${JSON.stringify(j)})'>✏ Edit</button>
+        <button class="btn btn-danger  btn-sm" onclick="deleteJob(${j.job_id})">🗑</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function openAddJob() {
+  ['edit-job-id','job-title','job-location','job-salary','job-skills'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('job-modal-title').textContent = 'Add New Job';
+  document.getElementById('job-msg').className = 'msg-bar';
+  document.getElementById('job-modal').classList.add('open');
+}
+
+function openEditJob(j) {
+  document.getElementById('job-modal-title').textContent = 'Edit Job';
+  document.getElementById('edit-job-id').value  = j.job_id;
+  document.getElementById('job-title').value    = j.title;
+  document.getElementById('job-location').value = j.location;
+  document.getElementById('job-salary').value   = j.salary_range;
+  document.getElementById('job-skills').value   = j.skills || '';
+  document.getElementById('job-msg').className  = 'msg-bar';
+  document.getElementById('job-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('job-modal').classList.remove('open'); }
+
+async function saveJob() {
+  const id     = document.getElementById('edit-job-id').value;
+  const skills = document.getElementById('job-skills').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const body   = { job_id: id, title: document.getElementById('job-title').value, location: document.getElementById('job-location').value, salary_range: document.getElementById('job-salary').value, skills };
+  const data   = await api(id ? '/admin/update-job' : '/admin/add-job', { method:'POST', body: JSON.stringify(body) }).then(r => r.json());
+  const msg    = document.getElementById('job-msg');
+  msg.className   = data.success ? 'msg-bar ok' : 'msg-bar err';
+  msg.textContent = data.success ? '✅ Saved!' : '❌ Error';
+  if (data.success) setTimeout(() => { closeModal(); loadJobs(); }, 700);
+}
+
+async function deleteJob(id) {
+  if (!confirm('Delete this job and all its applications?')) return;
+  const data = await api('/admin/delete-job/'+id, { method:'DELETE' }).then(r => r.json());
+  if (data.success) loadJobs();
+}
+
+/* ══════════════════════════════
+   USERS
+══════════════════════════════ */
+async function loadUsers() {
+  const data  = await api('/admin/users').then(r => r.json());
+  const tbody = document.getElementById('users-tbody');
+  if (!data.users || !data.users.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">No users found.</td></tr>'; return;
+  }
+  tbody.innerHTML = data.users.map(u => `
+    <tr>
+      <td><strong>${u.name}</strong></td>
+      <td style="font-size:0.82rem">${u.email}</td>
+      <td style="font-size:0.82rem">${u.phone || '—'}</td>
+      <td style="text-align:center">${u.experience !== null && u.experience !== undefined ? u.experience+' yr' : '—'}</td>
+      <td style="font-size:0.82rem">${u.education || '—'}</td>
+      <td style="max-width:150px">${(u.skills||'').split(',').filter(Boolean).map(s=>`<span class="skill-chip">${s.trim()}</span>`).join('') || '<span style="color:var(--muted);font-size:0.78rem">—</span>'}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewUserCVs(${u.user_id},'${u.name}')">📄 CVs</button></td>
+    </tr>`).join('');
+}
+
+async function viewUserCVs(userId, userName) {
+  document.getElementById('cv-modal-title').textContent = userName + "'s CVs";
+  document.getElementById('cv-modal-body').innerHTML    = '<p style="color:var(--muted)">Loading…</p>';
+  document.getElementById('cv-modal').classList.add('open');
+  const data = await api('/admin/user-cvs/' + userId).then(r => r.json());
+  if (!data.success || !data.cvs.length) {
+    document.getElementById('cv-modal-body').innerHTML = '<div class="empty-state"><div class="empty-icon">📂</div>No CVs uploaded by this user.</div>'; return;
+  }
+  document.getElementById('cv-modal-body').innerHTML = data.cvs.map(cv => `
+    <div class="cv-item">
+      <div class="cv-info">
+        <div class="cv-icon">${cv.file_format==='PDF'?'🔴':'🔵'}</div>
+        <div>
+          <div class="cv-name">${cv.file_name}</div>
+          <div class="cv-meta"><span class="badge badge-${cv.file_format}">${cv.file_format}</span> · ${cv.upload_date}</div>
+        </div>
+      </div>
+      <a href="/admin/download-cv/${cv.cv_id}" download>
+        <button class="btn btn-green btn-sm">⬇ Download</button>
+      </a>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════
+   APPLICATIONS
+══════════════════════════════ */
+async function loadApplications() {
+  const data  = await api('/admin/applications').then(r => r.json());
+  const tbody = document.getElementById('appl-tbody');
+  if (!data.applications || !data.applications.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">No applications yet.</td></tr>'; return;
+  }
+  tbody.innerHTML = data.applications.map(a => `
+    <tr>
+      <td><strong>${a.user_name}</strong></td>
+      <td style="font-size:0.8rem;color:var(--muted)">${a.user_email}</td>
+      <td>${a.title}</td>
+      <td style="font-size:0.82rem">${a.apply_date}</td>
+      <td><span class="badge badge-${a.application_status}">${a.application_status}</span></td>
+      <td>
+        <select onchange="updateStatus(${a.application_id}, this.value)">
+          <option ${a.application_status==='Pending'  ?'selected':''}>Pending</option>
+          <option ${a.application_status==='Approved' ?'selected':''}>Approved</option>
+          <option ${a.application_status==='Rejected' ?'selected':''}>Rejected</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+async function updateStatus(id, status) {
+  await api('/admin/update-status', { method:'POST', body: JSON.stringify({ application_id: id, status }) });
+  loadApplications();
+}
+
+/* ══════════════════════════════
+   ALL CVs — with real-time refresh
+══════════════════════════════ */
+async function loadAllCVs() {
+  const listEl  = document.getElementById('cvs-list');
+  const timeEl  = document.getElementById('cvs-refresh-time');
+
+  try {
+    const data = await api('/admin/all-cvs').then(r => r.json());
+    timeEl.textContent = 'Updated ' + timeNow();
+
+    if (!data.success) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Error: ${data.error || 'Could not load CVs'}</div>`; return;
+    }
+
+    if (!data.cvs || data.cvs.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">📂</div>
+        <div>No CVs uploaded yet.</div>
+        <div style="font-size:0.8rem;margin-top:6px">Ask users to upload their resumes from their dashboard.</div>
+      </div>`; return;
+    }
+
+    listEl.innerHTML = data.cvs.map(cv => `
+      <div class="cv-item">
+        <div class="cv-info">
+          <div class="cv-icon">${cv.file_format==='PDF'?'🔴':'🔵'}</div>
+          <div>
+            <div class="cv-name">${cv.file_name}</div>
+            <div class="cv-meta">
+              👤 <strong>${cv.user_name}</strong> · ${cv.user_email}
+              &nbsp;·&nbsp; <span class="badge badge-${cv.file_format}">${cv.file_format}</span>
+              &nbsp;·&nbsp; 📅 ${cv.upload_date}
+            </div>
+          </div>
+        </div>
+        <a href="/admin/download-cv/${cv.cv_id}" download style="flex-shrink:0">
+          <button class="btn btn-green btn-sm">⬇ Download</button>
+        </a>
+      </div>`).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Server error: ${e.message}</div>`;
+    timeEl.textContent = 'Failed at ' + timeNow();
+  }
+}
+
+/* ══════════════════════════════
+   CONTACTS — with real-time refresh
+══════════════════════════════ */
+async function loadContacts() {
+  const listEl = document.getElementById('contacts-list');
+  const timeEl = document.getElementById('contacts-refresh-time');
+
+  try {
+    const data = await api('/admin/contacts').then(r => r.json());
+    timeEl.textContent = 'Updated ' + timeNow();
+
+    if (!data.success) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Error: ${data.error || 'Could not load messages'}</div>`; return;
+    }
+
+    if (!data.contacts || data.contacts.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">✉️</div>
+        <div>No messages yet.</div>
+        <div style="font-size:0.8rem;margin-top:6px">Messages sent by users will appear here automatically.</div>
+      </div>`; return;
+    }
+
+    listEl.innerHTML = data.contacts.map(c => `
+      <div class="contact-card">
+        <div class="contact-header">
+          <div>
+            <div class="contact-user">👤 ${c.user_name}</div>
+            <div class="contact-email">${c.user_email}</div>
+          </div>
+          <div class="contact-date">📅 ${c.contact_date}</div>
+        </div>
+        <div class="contact-msg">${c.message}</div>
+        <div class="reply-wrap">
+          <label>Reply to ${c.user_name}</label>
+          <div class="reply-row">
+            <input class="reply-input" id="reply-${c.contact_id}" type="text" placeholder="Type your reply…"/>
+            <button class="btn btn-primary btn-sm" onclick="sendReply(${c.contact_id},${c.user_id})">📤 Send</button>
+          </div>
+          <div class="reply-sent" id="sent-${c.contact_id}">✅ Reply sent to ${c.user_name}!</div>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Server error: ${e.message}</div>`;
+    timeEl.textContent = 'Failed at ' + timeNow();
+  }
+}
+
+async function sendReply(contactId, userId) {
+  const input  = document.getElementById('reply-' + contactId);
+  const sentEl = document.getElementById('sent-'  + contactId);
+  const msg    = (input.value || '').trim();
+
+  if (!msg) { input.style.borderColor = 'var(--red)'; setTimeout(() => input.style.borderColor='', 1500); return; }
+
+  const btn = input.nextElementSibling;
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  const data = await api('/admin/reply-contact', {
+    method: 'POST', body: JSON.stringify({ user_id: userId, reply_message: msg, contact_id: contactId })
+  }).then(r => r.json());
+
+  if (data.success) {
+    input.value    = '';
+    input.disabled = true;
+    sentEl.style.display = 'block';
+    setTimeout(() => { sentEl.style.display='none'; input.disabled=false; }, 4000);
+  }
+  btn.disabled = false; btn.textContent = '📤 Send';
+}
+
+/* ══════════════════════════════
+   FEEDBACK
+══════════════════════════════ */
+async function loadFeedback() {
+  const listEl = document.getElementById('feedback-list');
+  const timeEl = document.getElementById('feedback-refresh-time');
+
+  try {
+    const data = await api('/admin/feedback').then(r => r.json());
+    timeEl.textContent = 'Updated ' + timeNow();
+
+    if (!data.success) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Error: ${data.error||'Could not load feedback'}</div>`; return;
+    }
+
+    if (!data.feedback || data.feedback.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">⭐</div>
+        <div>No feedback yet.</div>
+        <div style="font-size:0.8rem;margin-top:6px">User ratings and comments will appear here.</div>
+      </div>`; return;
+    }
+
+    const avg = (data.feedback.reduce((s,f) => s+f.rating, 0) / data.feedback.length).toFixed(1);
+    listEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;padding:14px 18px;background:rgba(124,92,252,0.08);border:1px solid rgba(124,92,252,0.2);border-radius:12px;margin-bottom:16px;">
+        <div style="font-size:2rem;font-family:'Playfair Display',serif;color:var(--accent2)">${avg}</div>
+        <div>
+          <div class="star-rating">${stars(parseFloat(avg))}</div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Average · ${data.feedback.length} review${data.feedback.length>1?'s':''}</div>
+        </div>
+      </div>
+      ${data.feedback.map(f=>`
+        <div class="feedback-card">
+          <div class="feedback-header">
+            <div>
+              <div class="feedback-user">👤 ${f.user_name} <span style="color:var(--muted);font-weight:400;font-size:0.76rem">(${f.user_email})</span></div>
+            </div>
+            <div class="star-rating" style="font-size:1rem">${stars(f.rating)} <span style="font-size:0.8rem;color:var(--muted)">${f.rating}/5</span></div>
+          </div>
+          <div class="feedback-comment">${f.comments ? '"'+f.comments+'"' : '<span style="color:var(--muted)">No comment provided</span>'}</div>
+          <div class="feedback-date">📅 ${f.date}</div>
+        </div>`).join('')}`;
+  } catch(e) {
+    listEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Server error: ${e.message}</div>`;
+    timeEl.textContent = 'Failed at ' + timeNow();
+  }
+}
+
+function logout() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  fetch('/auth/logout', { credentials:'include' }).then(() => window.location.href='index.html');
+}
+
+loadJobs();
+</script>
+</body>
+</html>
